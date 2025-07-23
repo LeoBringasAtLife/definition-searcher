@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wikipedia</title>
+    <style>
+        /* Reset ligero */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Linux Libertine', 'Georgia', 'Times', 'Source Serif Pro', serif;
+            margin: 2rem;
+            background: #fafafa;
+            color: #202122;
+            line-height: 1.65;
+        }
+
+        h1 {
+            /* font-size: 1.8em; */
+            font-weight: normal;
+            font-size: 2.75rem;
+            margin-bottom: 0.25rem;
+            color: #1a1a1a;
+            letter-spacing: -0.02em;
+            user-select: none;
+        }
+
+        .wiki {
+            text-decoration: none;
+            color: #6a60b0;
+            transition: color 0.25s ease, text-decoration 0.25s ease;
+            position: relative;
+        }
+
+        .wiki::after {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: #6a60b0;
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.3s ease;
+        }
+
+        .wiki:hover,
+        .wiki:focus {
+            color: #6a60b0;
+            outline: none;
+        }
+
+        .wiki:active {
+            color: #0b0080;
+        }
+
+        .wiki:hover::after,
+        .wiki:focus::after {
+            transform: scaleX(1);
+            transform-origin: left;
+            cursor: pointer;
+        }
+
+        p {
+            font-size: 1.125rem;
+            color: #3c4043;
+            margin-bottom: 1.75rem;
+            max-width: 600px;
+            line-height: 1.300;
+        }
+
+        form {
+            max-width: 600px;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        label {
+            font-family: sans-serif;
+            flex-basis: 100%;
+            font-weight: normal;
+            margin-bottom: 0.5rem;
+            color: #202122;
+            user-select: none;
+        }
+
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 0.7rem 1.1rem;
+            font-size: 1rem;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            outline-offset: 2px;
+        }
+
+        input[type="text"]:focus {
+            border-color: #6a60b0;
+            box-shadow: 0 0 8px rgba(6, 69, 173, 0.4);
+            outline: none;
+        }
+
+        button {
+            background-color: #6a60b0;
+            color: white;
+            padding: 0.7rem 1.5rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 3px 8px rgba(6, 69, 173, 0.4);
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            user-select: none;
+        }
+
+        button:hover,
+        button:focus {
+            background-color: #756cb1;
+            outline: none;
+        }
+
+        #results {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+            max-width: 600px;
+            font-size: 1rem;
+            color: #1b1b1b;
+            white-space: pre-wrap;
+            user-select: text;
+
+            opacity: 0;
+            transform: translateY(12px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        #results.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 650px) {
+            form {
+                flex-direction: column;
+            }
+
+            input[type="text"],
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>
+        <a class="wiki" href="https://es.wikipedia.org/wiki/Wikipedia:Portada" target="_blank"
+            rel="noopener noreferrer">Wikipedia</a>
+    </h1>
+
+    <p>Descubrí significados, contextos históricos, conocimiento general sobre una amplia variedad de temas y mucho
+        más... todo desde un solo lugar.</p>
+
+    <form id="form">
+        <label for="word">Ingresa una palabra o concepto:</label>
+        <input type="text" id="word" required placeholder="Buscar en Wikipedia" />
+        <button type="submit">Buscar</button>
+    </form>
+
+    <div id="results"></div>
+
+    <script>
+        const form = document.getElementById('form');
+        const input = document.getElementById('word');
+        const results = document.getElementById('results');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const word = input.value.trim();
+            if (!word) return;
+
+            results.textContent = 'Buscando...';
+            results.classList.remove('visible');
+
+            try {
+                const url = `https://es.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(word)}`;
+                const res = await fetch(url);
+
+                if (!res.ok) throw new Error(`No se encontró información sobre "${word}". Probá con otra palabra.`);
+
+                const data = await res.json();
+
+                if (data.type === "disambiguation") {
+                    const items = data.extract?.split('\n').map(line => line.trim()).filter(line => line !== '' && !line.toLowerCase().includes("puede referirse a:"));
+                    const listHTML = items && items.length
+                        ? `<ul>${items.map(item => `<li>${item.trim()}</li>`).join('')}</ul>`
+                        : '<p>Revisá Wikipedia para más detalles.</p>';
+
+                    results.innerHTML = `
+                    <h2>${data.title} (Desambiguación)</h2>
+                    <p><em>Esta palabra tiene varios significados:</em></p>
+                    ${listHTML}
+                    <p>
+                        <a href="https://es.wikipedia.org/wiki/${encodeURIComponent(data.title)}" 
+                            target="_blank" rel="noopener noreferrer">
+                                Ver todos los significados en Wikipedia
+                        </a>
+                    </p>
+                `;
+                } else if (data.extract) {
+                    results.innerHTML = `
+                    <h2>${data.title}</h2>
+                    <p>${data.extract}</p>
+                    <p><small>Fuente: Wikipedia</small></p>
+                `;
+                } else {
+                    results.textContent = 'No se encontró extracto para esa palabra.';
+                }
+
+                results.classList.add('visible');
+
+            } catch (error) {
+                results.textContent = error.message;
+                results.classList.add('visible');
+            }
+        });
+    </script>
+
+
+
+</body>
+
+</html>
