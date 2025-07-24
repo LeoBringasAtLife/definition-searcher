@@ -405,6 +405,21 @@
         cerrarMenu.addEventListener('click', () => {
             menuLateral.classList.add('oculto');
         });
+
+        document.addEventListener('click', (event) => {
+            // Si el menú está oculto, no hacemos nada
+            if (menuLateral.classList.contains('oculto')) return;
+
+            // Verificamos si el click fue dentro del menú o en el botón de abrir menú
+            const clickDentroMenu = menuLateral.contains(event.target);
+            const clickEnAbrirMenu = abrirMenu.contains(event.target);
+
+            // Si el clic NO fue dentro del menú ni en el botón de abrir, cerramos el menú
+            if (!clickDentroMenu && !clickEnAbrirMenu) {
+                menuLateral.classList.add('oculto');
+            }
+        });
+
     </script>
 
     <footer>
