@@ -19,10 +19,6 @@
     <!-- Sugerencias de autocompletado (en el input) -->
     <!-- Historial de busquedas -->
 
-
-
-
-
     <style>
         * {
             box-sizing: border-box;
@@ -33,6 +29,30 @@
             margin: 2rem;
             background: #fafafa;
             color: #202122;
+        }
+
+        .alerta {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 0.7rem;
+            background: rgba(200, 0, 0, 0.25);
+            color: #800;
+            font-weight: bold;
+            text-align: center;
+            z-index: 10000;
+        }
+
+        .alerta a {
+            margin-left: 1rem;
+            color: #0645ad;
+            text-decoration: underline;
+            font-weight: normal;
+        }
+
+        .alerta a:hover {
+            color: #3366cc;
         }
 
         ::selection {
@@ -256,11 +276,11 @@
 
         .input-wrapper .icon-lupa {
             position: absolute;
-            left: 7px;
+            left: 10px;
             top: 50%;
             transform: translateY(-50%);
             color: #72777d;
-            font-size: 1.7rem;
+            font-size: 1.8rem;
             pointer-events: none;
         }
 
@@ -323,6 +343,14 @@
 </head>
 
 <body>
+    <div class="alerta">
+        ⚠️ Alerta: Esta no es la página oficial de Wikipedia
+        <a href="https://es.wikipedia.org/wiki/Wikipedia:Portada" target="_blank" rel="noopener noreferrer">
+            Ir a Wikipedia oficial
+        </a>
+    </div>
+
+
     <header class="menu-wiki">
         <div class="contenedor-header">
             <button id="abrir-menu" class="icono-menu">&#9776;</button>
@@ -350,10 +378,10 @@
             más... todo desde un solo lugar.</p>
     </div>
 
-    <form id="form" class="buscador-wiki" role="search" aria-label="Buscar en Wikipedia">
+    <form autocomplete="off" id="form" class="buscador-wiki" role="search" aria-label="Buscar en Wikipedia">
         <div class="input-wrapper">
             <span class="material-icons icon-lupa" aria-hidden="true">search</span>
-            <input type="text" id="word" required placeholder="Buscar en Wikipedia" />
+            <input type="text" id="word" placeholder="Buscar en Wikipedia" />
         </div>
         <button type="submit" aria-label="Buscar">Buscar</button>
     </form>
